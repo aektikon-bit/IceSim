@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pydeck as pdk
-import time
 
 # -----------------------------
 # Page config
@@ -80,35 +79,40 @@ elif menu == "🌏 Sea Level Map":
         "ScatterplotLayer", df_map,
         get_position=["lon","lat"],
         get_radius="sea_lvl*40000",
-        get_color="[255, sea_lvl*8, 0]",
+        get_fill_color="[255, sea_lvl*8, 0]",
         pickable=True
     )
     view_state = pdk.ViewState(latitude=20, longitude=0, zoom=1, pitch=30)
     st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
 
 # -----------------------------
-# 4) 3D Globe Ultimate
+# 4) 3D Globe Ultimate (Fixed)
 # -----------------------------
 elif menu == "🌍 3D Globe Ultimate":
-    st.title("🌍 3D โลกหมุนได้ — Ultimate View")
+    st.title("🌍 3D Globe Ultimate (Safe Version)")
     st.write("🌐 จุดเมือง 1000+ + Ice Dome + Slider หมุน Globe + NASA 2024–2025")
 
     # สุ่ม 1000 จุดเมือง
     np.random.seed(42)
-    lats = np.random.uniform(-60,80,1000)
-    lons = np.random.uniform(-180,180,1000)
-    temps = np.random.uniform(-2,5,1000)
-    df_points = pd.DataFrame({"lat":lats,"lon":lons,"temp":temps})
+    df_points = pd.DataFrame({
+        "lat": np.random.uniform(-60, 80, 1000),
+        "lon": np.random.uniform(-180, 180, 1000),
+        "temp": np.random.uniform(-2, 5, 1000)
+    })
+
+    # แปลง temp เป็นสี RGB ล่วงหน้า
+    df_points['color'] = df_points['temp'].apply(lambda t: [255, int((t+2)*25), 50])
 
     scatter_layer = pdk.Layer(
         "ScatterplotLayer",
         df_points,
-        get_position=["lon","lat"],
+        get_position=["lon", "lat"],
         get_radius=20000,
-        get_fill_color="[255, int((temp+2)*25), 50]",
+        get_fill_color="color",
         pickable=True
     )
 
+    # Ice Dome
     ice_layer = pdk.Layer(
         "PolygonLayer",
         [
